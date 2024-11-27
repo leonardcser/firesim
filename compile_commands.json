@@ -12,6 +12,26 @@
       "-Iimgui/backends",
       "-c",
       "-o",
+      "build/src/ui/sidebar.o",
+      "src/ui/sidebar.cpp"
+    ],
+    "directory": "/Users/leo/dev/cpp/firesim",
+    "file": "/Users/leo/dev/cpp/firesim/src/ui/sidebar.cpp",
+    "output": "/Users/leo/dev/cpp/firesim/build/src/ui/sidebar.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++17",
+      "-Wall",
+      "-I./",
+      "-I-D_THREAD_SAFE",
+      "-I/opt/homebrew/include",
+      "-I/opt/homebrew/include/SDL2",
+      "-Iimgui",
+      "-Iimgui/backends",
+      "-c",
+      "-o",
       "build/src/main.o",
       "src/main.cpp"
     ],

@@ -9,7 +9,7 @@ BUILD_DIR = build
 IMGUI_DIR = imgui
 
 # Sources
-SRCS = $(wildcard $(SRC_DIR)/*.cpp)
+SRCS = $(shell find $(SRC_DIR) -type f -name "*.cpp")
 IMGUI_SRCS = $(IMGUI_DIR)/imgui.cpp \
              $(IMGUI_DIR)/imgui_draw.cpp \
              $(IMGUI_DIR)/imgui_tables.cpp \
