@@ -1,6 +1,6 @@
 #include "imgui.h"
 
-void RenderSidebar() {
+void renderSidebar() {
     // Set up the position and size of the sidebar
     ImGuiIO &io = ImGui::GetIO();
     ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x - 250.0f, 0.0f),

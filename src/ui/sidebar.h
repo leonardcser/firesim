@@ -1,6 +1,6 @@
 #ifndef SIDEBAR_H
 #define SIDEBAR_H
 
-void RenderSidebar();
+void renderSidebar();
 
 #endif // SIDEBAR_H
