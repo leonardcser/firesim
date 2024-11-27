@@ -2,7 +2,6 @@
 #define SIMULATION_H
 
 #include <GL/glew.h>
-#include <string>
 
 namespace Simulation {
 // Public functions
@@ -12,7 +11,6 @@ void render();
 void cleanup();
 
 // Utility for shader management
-GLuint loadShader(const std::string &filePath, GLenum shaderType);
 GLuint createShaderProgram();
 } // namespace Simulation
 

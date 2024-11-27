@@ -1,99 +1,83 @@
+#include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
-#include "backends/imgui_impl_sdl2.h"
 #include "core/simulation.h"
 #include "imgui.h"
 #include "ui/sidebar.h"
 #include <GL/glew.h>
-#include <SDL2/SDL.h>
+#include <GLFW/glfw3.h>
 #include <iostream>
 
 // Function prototypes
-bool initializeSDL(SDL_Window *&window, SDL_GLContext &gl_context);
-void setupImGui(SDL_Window *window, SDL_GLContext gl_context);
-void cleanup(SDL_Window *window, SDL_GLContext gl_context);
-void mainLoop(SDL_Window *window, SDL_GLContext gl_context);
+GLFWwindow* initializeGLFW();
+void setupImGui(GLFWwindow* window);
+void cleanup(GLFWwindow* window);
+void mainLoop(GLFWwindow* window);
 
 int main() {
-    SDL_Window *window = nullptr;
-    SDL_GLContext gl_context;
-
-    if (!initializeSDL(window, gl_context)) {
+    GLFWwindow* window = initializeGLFW();
+    if (!window) {
         return 1;
     }
 
-    setupImGui(window, gl_context);
+    setupImGui(window);
 
     if (!Simulation::initialize()) {
         std::cerr << "Failed to initialize simulation!" << std::endl;
-        cleanup(window, gl_context);
+        cleanup(window);
         return 1;
     }
 
-    mainLoop(window, gl_context);
+    mainLoop(window);
 
     Simulation::cleanup();
-    cleanup(window, gl_context);
-
+    cleanup(window);
     return 0;
 }
 
-bool initializeSDL(SDL_Window *&window, SDL_GLContext &gl_context) {
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
-        return false;
+GLFWwindow* initializeGLFW() {
+    if (!glfwInit()) {
+        std::cerr << "Failed to initialize GLFW" << std::endl;
+        return nullptr;
     }
 
-    window =
-        SDL_CreateWindow("firesim", SDL_WINDOWPOS_CENTERED,
-                         SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_OPENGL);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
+    GLFWwindow* window = glfwCreateWindow(800, 600, "firesim", nullptr, nullptr);
     if (!window) {
-        std::cerr << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
-        SDL_Quit();
-        return false;
+        std::cerr << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return nullptr;
     }
 
-    gl_context = SDL_GL_CreateContext(window);
-    if (!gl_context) {
-        std::cerr << "SDL_GL_CreateContext Error: " << SDL_GetError()
-                  << std::endl;
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return false;
-    }
+    glfwMakeContextCurrent(window);
 
     if (glewInit() != GLEW_OK) {
         std::cerr << "GLEW initialization failed!" << std::endl;
-        SDL_GL_DeleteContext(gl_context);
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return false;
+        glfwDestroyWindow(window);
+        glfwTerminate();
+        return nullptr;
     }
 
-    return true;
+    return window;
 }
 
-void setupImGui(SDL_Window *window, SDL_GLContext gl_context) {
+void setupImGui(GLFWwindow* window) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
-    ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
-    ImGui_ImplOpenGL3_Init("#version 120");
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 330");
 }
 
-void mainLoop(SDL_Window *window, SDL_GLContext gl_context) {
-    bool running = true;
-    SDL_Event event;
-
-    while (running) {
-        while (SDL_PollEvent(&event)) {
-            ImGui_ImplSDL2_ProcessEvent(&event);
-            if (event.type == SDL_QUIT) {
-                running = false;
-            }
-        }
+void mainLoop(GLFWwindow* window) {
+    while (!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
 
         ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplSDL2_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
         // Update and render simulation
@@ -101,24 +85,19 @@ void mainLoop(SDL_Window *window, SDL_GLContext gl_context) {
         Simulation::render();
 
         // Render ImGui UI
-        renderSidebar();
+        // renderSidebar();
+        // ImGui::Render();
+        // ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        ImGui::Render();
-
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        SDL_GL_SwapWindow(window);
+        glfwSwapBuffers(window);
     }
 }
 
-void cleanup(SDL_Window *window, SDL_GLContext gl_context) {
+void cleanup(GLFWwindow* window) {
     ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
-    SDL_GL_DeleteContext(gl_context);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
+
+    glfwDestroyWindow(window);
+    glfwTerminate();
 }
